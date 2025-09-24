@@ -56,12 +56,11 @@
         const { data, error } = await client
             .from('messages')
             .select('*')
-            .order('added_at', { ascending: false })
-            .limit(10); // latest 10 messages
+            .order('added_at', { ascending: false });
         if (error) {
             return ["Error loading messages!"];
         }
-        return data.map(m => `(${m.added_at}) ${m.text}`);
+        return data.map(m => `${m.text}`);
     }
 $('body').terminal(async function(command) {
     const parts = command.trim().split(' ');
@@ -119,3 +118,4 @@ $('body').terminal(async function(command) {
 </body>
 
 </html>
+<!-- https://igit.me/ps-terminal -->
