@@ -7,6 +7,7 @@
 
     <meta name="viewport" content="width=device-width,
         minimum-scale=1,initial-scale=1">
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
 
     <script src=
         "https://code.jquery.com/jquery-3.3.1.min.js">
@@ -35,26 +36,86 @@
 </head>
 
 <body>
-    <script>
-        $('body').terminal({
-            iam: function (name) {
-                this.echo('Hello, ' + name +
-                    '. Welcome to GeeksForGeeks');
-            },
-            founder: function () {
-                this.echo('Sandeep Jain');
-            },
-            help: function () {
-                this.echo('iam - iam command and '
-                + 'pass your name as argument\n'
-                + 'founder to know the founder');
-            },
-        }, {
-            greetings: 'GeeksForGeeks - A place to'
-                + ' learn DS, Algo and Computer '
-                + 'Science for free'
-        });
-    </script>
+<script>
+    // 🔑 Replace with your own Supabase credentials
+    const SUPABASE_URL = "https://evfriazzbaozophrasoc.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2ZnJpYXp6YmFvem9waHJhc29jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzAwMTgsImV4cCI6MjA3NDMwNjAxOH0.InM-WRYYAeI7tLGCRaXj_YJnkRNKop6e_S75KF1iaAY";
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function saveMessage(msg) {
+        const { data, error } = await client
+            .from('messages')
+            .insert([{ text: msg }]);
+        if (error) {
+            return "Error saving message!";
+        }
+        return `Ok wrote "${msg}" in timeless wall`;
+    }
+
+    async function loadMessages() {
+        const { data, error } = await client
+            .from('messages')
+            .select('*')
+            .order('added_at', { ascending: false })
+            .limit(10); // latest 10 messages
+        if (error) {
+            return ["Error loading messages!"];
+        }
+        return data.map(m => `(${m.added_at}) ${m.text}`);
+    }
+$('body').terminal(async function(command) {
+    const parts = command.trim().split(' ');
+    const cmd = parts[0];
+    const args = parts.slice(1);
+
+    switch (cmd) {
+    case 'write': {
+        const message = args.join(" ");
+        if (!message) {
+            this.echo("Nothing to write? dont waste our server energy");
+            return;
+        }
+        const result = await saveMessage(message);
+        this.echo(result);
+        break;
+    }
+
+    case 'show': {
+        const lines = await loadMessages();
+        if (lines.length === 0) {
+            this.echo("No messages yet...");
+        } else {
+            lines.forEach(line => this.echo(line));
+        }
+        break;
+    }
+
+    case 'help': {
+        this.echo("No help available...");
+        break;
+    }
+
+    case 'cls': {
+        this.clear();
+        break;
+    }
+
+    case 'show dn': {
+        this.echo("Current world line: 0.571024%")
+    }
+
+    default: {
+        if (cmd) {
+            this.echo("Non-sense things doesn't work here.");
+        }
+    }
+}
+
+}, {
+    greetings: 'Hi, this is Timeless PS-Terminal. (version: 0.1)'
+});
+</script>
+
 </body>
 
 </html>
